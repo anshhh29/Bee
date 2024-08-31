@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { useDispatch } from "react-redux"
-import { add } from "../store/cartSlice"
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { useDispatch } from "react-redux";
+import { add } from "../store/cartSlice";
 
 const CategoryDetails = ({ categoryDetails }) => {
     const [quantities, setQuantities] = useState({});
@@ -12,7 +12,7 @@ const CategoryDetails = ({ categoryDetails }) => {
             ...prevQuantities,
             [id]: (prevQuantities[id] || 0) + 1
         }));
-    }
+    };
 
     const decrement = (id) => {
         setQuantities(prevQuantities => {
@@ -24,7 +24,7 @@ const CategoryDetails = ({ categoryDetails }) => {
             }
             return prevQuantities;
         });
-    }
+    };
 
     const addItems = (data) => {
         const { id, title, price, category } = data;
@@ -38,7 +38,7 @@ const CategoryDetails = ({ categoryDetails }) => {
                 [id]: 0
             }));
         }
-    }
+    };
 
     return (
         <div>
@@ -91,11 +91,16 @@ const CategoryDetails = ({ categoryDetails }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
                             </svg>
                         </div>
+                        {curr.img && (
+                            <div className='ml-2'>
+                                <img src={curr.img} alt={curr.title} className='h-28 w-28 object-cover rounded' />
+                            </div>
+                        )}
                     </motion.div>
                 ))}
             </div>
         </div>
-    )
+    );
 }
 
-export default CategoryDetails
+export default CategoryDetails;

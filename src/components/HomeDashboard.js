@@ -1,5 +1,4 @@
 import { Fragment, useState } from 'react'
-import { Dialog, Transition } from '@headlessui/react'
 import Avatar from 'react-avatar';
 import FlipMove from 'react-flip-move';
 import PlacedOrder from './PlacedOrder';
