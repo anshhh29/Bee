@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from "framer-motion";
-import { Fragment, useRef } from 'react';
+import React, { useState, useRef, Fragment } from 'react';
+import { motion } from "framer-motion";
 import { Dialog, Transition } from '@headlessui/react';
 import { UserIcon } from '@heroicons/react/24/outline';
 import { useDispatch, useSelector } from "react-redux";
@@ -71,6 +70,7 @@ const Tables = ({ onClick }) => {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
+                theme: "colored" // This will make the toast more prominent with bright colors
             });
             return;
         }
@@ -86,6 +86,7 @@ const Tables = ({ onClick }) => {
                 pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
+                theme: "colored" // Ensures high visibility of the toast
             });
             return;
         }

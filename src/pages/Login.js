@@ -1,36 +1,71 @@
 import axios from "axios";
-import { useState } from "react"
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { auth, provider } from './firebase'; // Adjust the path if necessary
+import { signInWithPopup } from 'firebase/auth';
+import { toast } from 'react-toastify'; // Optional, for notifications
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Login() {
-
-    const [email, setEmail] = useState();
-    const [pass, setPass] = useState();
+    const [email, setEmail] = useState('');
+    const [pass, setPass] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
     const setDummy = (e) => {
         e.preventDefault();
         setEmail("example@gmail.com");
         setPass("123456");
     }
 
+    const validateForm = () => {
+        if (!email || !pass) {
+            toast.error("Please fill in all fields.");
+            return false;
+        }
+        return true;
+    };
+
     const signIn = async (e) => {
         e.preventDefault();
 
+        if (!validateForm()) return;
+
         try {
+            setLoading(true);
             const res = await axios.post("https://react-pos-backend.vercel.app/api/login", { email, password: pass });
-            console.log(res);
             localStorage.setItem("userInfo", JSON.stringify(res.data.userLogin));
             localStorage.setItem("jwt", JSON.stringify(res.data.token));
             navigate("/dashboard");
+            toast.success("Login successful!");
         } catch (error) {
-            alert(error);
+            toast.error("Error: " + error.response?.data?.message || error.message);
+        } finally {
+            setLoading(false);
         }
     }
+
+    const signInWithGoogle = async () => {
+        try {
+            setLoading(true);
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            localStorage.setItem("userInfo", JSON.stringify(user));
+            localStorage.setItem("jwt", JSON.stringify(user.accessToken));
+            navigate("/dashboard");
+            toast.success("Sign-In successful!");
+        } catch (error) {
+            toast.error('Error signing in with Google: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <>
             <div className="flex h-screen">
-                <div className="flex flex-1 flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-[#ffffff] ">
+                <div className="flex flex-1 flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24 bg-[#ffffff]">
                     <div className="mx-auto w-full max-w-sm lg:w-96">
                         <div>
                             <div className="flex items-center">
@@ -39,7 +74,6 @@ export default function Login() {
                                     src="https://d30w0v1mttprqz.cloudfront.net/img/features/cloud-pos/stand-pos.svg"
                                     alt="Your Company"
                                 />
-                                {/* <h4 className="font-semibold text-4xl">POS System</h4> */}
                             </div>
 
                             <h2 className="mt-6 text-3xl font-bold tracking-tight">Sign in to BillEase</h2>
@@ -52,31 +86,28 @@ export default function Login() {
 
                                     <div className="mt-1 grid grid-cols-2 gap-3">
                                         <div>
-                                            <a
-                                                href="#"
+                                            <button
+                                                onClick={signInWithGoogle}
                                                 className="inline-flex w-full justify-center rounded-md border border-gray-300 py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
+                                                disabled={loading}
                                             >
-                                                <span className="sr-only">Sign in with Facebook</span>
-                                                <svg className="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M20 10c0-5.523-4.477-10-10-10S0 4.477 0 10c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V10h2.54V7.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V10h2.773l-.443 2.89h-2.33v6.988C16.343 19.128 20 14.991 20 10z"
-                                                        clipRule="evenodd"
-                                                    />
+                                                <span className="sr-only">Sign in with Google</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 488 512">
+                                                    <path d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"/>
                                                 </svg>
-                                            </a>
+                                            </button>
                                         </div>
 
                                         <div>
-                                            <a
-                                                href="#"
+                                            <button
                                                 className="inline-flex w-full justify-center rounded-md border border-gray-300 py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50"
+                                                disabled={loading}
                                             >
                                                 <span className="sr-only">Sign in with Twitter</span>
                                                 <svg className="h-5 w-5" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20">
                                                     <path d="M6.29 18.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0020 3.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.073 4.073 0 01.8 7.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 010 16.407a11.616 11.616 0 006.29 1.84" />
                                                 </svg>
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -151,18 +182,20 @@ export default function Login() {
 
                                     <div>
                                         <button
-                                            onClick={signIn}
                                             type="submit"
+                                            onClick={signIn}
                                             className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            disabled={loading}
                                         >
-                                            Sign in
+                                            {loading ? 'Signing in...' : 'Sign in'}
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={setDummy}
-                                            type="submit"
-                                            className="mt-4 flex w-full justify-center rounded-md border border-transparent bg-red-500 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                            className="mt-3 flex w-full justify-center rounded-md border border-transparent bg-gray-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                                            disabled={loading}
                                         >
-                                            Get Dummy Credentials
+                                            {loading ? 'Loading...' : 'Use Dummy Credentials'}
                                         </button>
                                     </div>
                                 </form>
@@ -170,14 +203,15 @@ export default function Login() {
                         </div>
                     </div>
                 </div>
+
                 <div className="relative hidden w-0 flex-1 lg:block">
                     <img
                         className="absolute inset-0 h-full w-full object-cover"
-                        src="https://img.freepik.com/premium-photo/human-hand-working-with-3d-rendering-cashier-machine_493806-1518.jpg?w=1060"
+                        src="https://images.unsplash.com/photo-1556740749-887f6717d7e4?ixid=MnwzNjUyOXwwfDF8c2VhcmNofDl8fHxlbnwwfHx8fDE2MzkwOTAxMzA&ixlib=rb-1.2.1&q=85&w=1920"
                         alt=""
                     />
                 </div>
             </div>
         </>
-    )
+    );
 }
